@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   X,
   FileText,
@@ -10,6 +10,7 @@ import {
   HelpCircle,
   ArrowRight,
   BookOpen,
+  Upload,
 } from 'lucide-react';
 import { VocabularyItem, WordClass, CefrLevel, PriorityLevel, UsageLevel, VocabExample } from '../../types';
 import { api } from '../../services/api';
@@ -26,6 +27,12 @@ export const AddVocabTextModal: React.FC<AddVocabTextModalProps> = ({
   onSuccess,
 }) => {
   const [activeTab, setActiveTab] = useState<'quickText' | 'form'>('quickText');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // File upload state
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [batchItems, setBatchItems] = useState<VocabularyItem[]>([]);
+  const [batchProgress, setBatchProgress] = useState<string | null>(null);
 
   // Quick Text Input with exact required structure
   const [rawText, setRawText] = useState(
@@ -127,226 +134,345 @@ Từ trái nghĩa:
 
   if (!isOpen) return null;
 
-  // Parser for raw text formatted with:
-  // Từ vựng, Nghĩa, 3 ví dụ cho từ vựng, Từ đồng nghĩa & ví dụ, Từ trái nghĩa & ví dụ
+  // Helper parser for a single block of vocabulary text
+  const parseBlockToVocabItem = (blockText: string, idx: number = 0): VocabularyItem | null => {
+    const lines = blockText.split('\n');
+    let parsedWord = '';
+    let parsedIpa = '';
+    let parsedPos: WordClass = 'verb';
+    let parsedCefr: CefrLevel = 'B2';
+    let parsedDefVi = '';
+    let parsedDefEn = '';
+    let parsedTopic = 'General Business';
+    let parsedPart = 'Part 5';
+    let parsedNotes = '';
+
+    const parsedExamples: VocabExample[] = [];
+    const parsedSynonyms: Array<{ targetPhrase: string; usageLevel: UsageLevel; context: string; exampleEn: string; exampleVi: string }> = [];
+    const parsedAntonyms: Array<{ targetPhrase: string; usageLevel: UsageLevel; context: string; exampleEn: string; exampleVi: string }> = [];
+
+    let currentSection: 'header' | 'meaning' | 'examples' | 'synonyms' | 'antonyms' = 'header';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      const lower = line.toLowerCase();
+
+      if (lower.startsWith('nghĩa')) {
+        currentSection = 'meaning';
+        const colonIdx = line.indexOf(':');
+        if (colonIdx !== -1 && line.slice(colonIdx + 1).trim()) {
+          parsedDefVi = line.slice(colonIdx + 1).trim();
+        }
+        continue;
+      }
+
+      if (lower.includes('ví dụ cho từ vựng') || lower.startsWith('3 ví dụ')) {
+        currentSection = 'examples';
+        continue;
+      }
+
+      if (lower.startsWith('từ đồng nghĩa') || lower.startsWith('đồng nghĩa')) {
+        currentSection = 'synonyms';
+        continue;
+      }
+
+      if (lower.startsWith('từ trái nghĩa') || lower.startsWith('trái nghĩa')) {
+        currentSection = 'antonyms';
+        continue;
+      }
+
+      if (currentSection === 'header') {
+        const colonIdx = line.indexOf(':');
+        if (colonIdx !== -1) {
+          const key = line.slice(0, colonIdx).trim().toLowerCase();
+          const val = line.slice(colonIdx + 1).trim();
+
+          if (key.includes('từ') || key === 'word') {
+            parsedWord = val.toUpperCase();
+          } else if (key === 'ipa' || key.includes('phiên âm')) {
+            parsedIpa = val;
+          } else if (key.includes('loại từ') || key === 'pos') {
+            const valLower = val.toLowerCase();
+            if (valLower.includes('noun') || valLower.includes('danh')) parsedPos = 'noun';
+            else if (valLower.includes('adj') || valLower.includes('tính')) parsedPos = 'adjective';
+            else if (valLower.includes('adv') || valLower.includes('trạng')) parsedPos = 'adverb';
+            else if (valLower.includes('phrase') || valLower.includes('cụm')) parsedPos = 'phrase';
+            else parsedPos = 'verb';
+          } else if (key.includes('cấp độ') || key.includes('cefr')) {
+            parsedCefr = (val.toUpperCase() as CefrLevel) || 'B2';
+          } else if (key.includes('chủ đề') || key === 'topic') {
+            parsedTopic = val;
+          } else if (key.includes('part') || key.includes('phần')) {
+            parsedPart = val;
+          } else if (key.includes('lưu ý') || key.includes('ghi chú')) {
+            parsedNotes = val;
+          }
+        }
+      } else if (currentSection === 'meaning') {
+        const colonIdx = line.indexOf(':');
+        if (colonIdx !== -1) {
+          const key = line.slice(0, colonIdx).trim().toLowerCase();
+          const val = line.slice(colonIdx + 1).trim();
+          if (key.includes('việt') || key.includes('nghĩa')) {
+            parsedDefVi = val;
+          } else if (key.includes('anh') || key.includes('en') || key.includes('giải thích')) {
+            parsedDefEn = val;
+          }
+        } else if (!parsedDefVi) {
+          parsedDefVi = line.replace(/^[-*•]\s*/, '').trim();
+        }
+      } else if (currentSection === 'examples') {
+        const cleaned = line.replace(/^(\d+[\.\)]|[-*•])\s*/, '').trim();
+        const match = cleaned.match(/^([^(]+)(?:\(([^)]+)\))?$/);
+        if (match) {
+          const exEn = match[1].trim();
+          const exVi = (match[2] || '').trim();
+          if (exEn) {
+            parsedExamples.push({ en: exEn, vi: exVi });
+          }
+        } else if (cleaned) {
+          parsedExamples.push({ en: cleaned, vi: '' });
+        }
+      } else if (currentSection === 'synonyms') {
+        const cleaned = line.replace(/^[-*•]\s*/, '').trim();
+        const colonIdx = cleaned.indexOf(':');
+        if (colonIdx !== -1) {
+          const targetPhrase = cleaned.slice(0, colonIdx).trim();
+          const rest = cleaned.slice(colonIdx + 1).trim();
+          const match = rest.match(/^([^(]+)(?:\(([^)]+)\))?$/);
+          const exEn = match ? match[1].trim() : rest;
+          const exVi = match && match[2] ? match[2].trim() : '';
+
+          if (targetPhrase) {
+            parsedSynonyms.push({
+              targetPhrase,
+              usageLevel: 'Cao',
+              context: 'Ngữ cảnh tương đương',
+              exampleEn: exEn,
+              exampleVi: exVi,
+            });
+          }
+        } else {
+          cleaned.split(',').forEach((p) => {
+            const phrase = p.trim();
+            if (phrase) {
+              parsedSynonyms.push({
+                targetPhrase: phrase,
+                usageLevel: 'Cao',
+                context: 'Ngữ cảnh công sở',
+                exampleEn: `We can ${phrase.toLowerCase()} to fulfill the request.`,
+                exampleVi: `Chúng ta có thể ${phrase.toLowerCase()} để đáp ứng yêu cầu.`,
+              });
+            }
+          });
+        }
+      } else if (currentSection === 'antonyms') {
+        const cleaned = line.replace(/^[-*•]\s*/, '').trim();
+        const colonIdx = cleaned.indexOf(':');
+        if (colonIdx !== -1) {
+          const targetPhrase = cleaned.slice(0, colonIdx).trim();
+          const rest = cleaned.slice(colonIdx + 1).trim();
+          const match = rest.match(/^([^(]+)(?:\(([^)]+)\))?$/);
+          const exEn = match ? match[1].trim() : rest;
+          const exVi = match && match[2] ? match[2].trim() : '';
+
+          if (targetPhrase) {
+            parsedAntonyms.push({
+              targetPhrase,
+              usageLevel: 'Cao',
+              context: 'Ngữ cảnh đối lập',
+              exampleEn: exEn,
+              exampleVi: exVi,
+            });
+          }
+        } else {
+          cleaned.split(',').forEach((p) => {
+            const phrase = p.trim();
+            if (phrase) {
+              parsedAntonyms.push({
+                targetPhrase: phrase,
+                usageLevel: 'Cao',
+                context: 'Ngữ cảnh đối lập',
+                exampleEn: `They chose not to ${phrase.toLowerCase()} at this time.`,
+                exampleVi: `Họ chọn không ${phrase.toLowerCase()} vào thời điểm này.`,
+              });
+            }
+          });
+        }
+      }
+    }
+
+    if (!parsedWord || !parsedDefVi) return null;
+
+    while (parsedExamples.length < 3) {
+      const eIdx = parsedExamples.length + 1;
+      parsedExamples.push({
+        en: `Example ${eIdx}: Employees should be familiar with "${parsedWord.toLowerCase()}".`,
+        vi: `Ví dụ ${eIdx}: Nhân viên nên làm quen với từ "${parsedWord.toLowerCase()}".`,
+      });
+    }
+
+    return {
+      id: `vocab-${Date.now()}-${idx}-${parsedWord.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+      word: parsedWord,
+      ipa: parsedIpa || `/${parsedWord.toLowerCase()}/`,
+      partOfSpeech: parsedPos,
+      cefrLevel: parsedCefr,
+      priorityLevel: 'Priority 1',
+      definitionVi: parsedDefVi,
+      definitionEn: parsedDefEn || parsedDefVi,
+      exampleEn: parsedExamples[0].en,
+      exampleVi: parsedExamples[0].vi,
+      examples: parsedExamples.slice(0, 3),
+      topic: parsedTopic,
+      toeicPart: parsedPart,
+      sourceDoc: fileName ? `Imported from ${fileName}` : 'User Added Text',
+      contextNotes: parsedNotes || undefined,
+      synonyms: parsedSynonyms.map((s, sIdx) => ({
+        id: `syn-${Date.now()}-${idx}-${sIdx}`,
+        targetPhrase: s.targetPhrase,
+        relationType: 'synonym',
+        context: s.context,
+        usageLevel: s.usageLevel,
+        priority: 'Priority 1',
+        supportingExample: s.exampleEn,
+        supportingExampleVi: s.exampleVi,
+        interchangeability: 'conditional',
+        verificationStatus: 'verified',
+      })),
+      antonyms: parsedAntonyms.map((a, aIdx) => ({
+        id: `ant-${Date.now()}-${idx}-${aIdx}`,
+        targetPhrase: a.targetPhrase,
+        relationType: 'antonym',
+        context: a.context,
+        usageLevel: a.usageLevel,
+        priority: 'Priority 1',
+        supportingExample: a.exampleEn,
+        supportingExampleVi: a.exampleVi,
+        interchangeability: 'conditional',
+        verificationStatus: 'verified',
+      })),
+      collocations: [],
+      wordFamily: {},
+    };
+  };
+
+  const parseMultipleBlocksFromText = (fullText: string): VocabularyItem[] => {
+    let blocks = fullText.split(/\n\s*[-=_]{3,}\s*\n/);
+    if (blocks.length <= 1) {
+      const splitRegex = /\n(?=(?:Từ vựng|Word)\s*:)/gi;
+      blocks = fullText.split(splitRegex);
+    }
+
+    const items: VocabularyItem[] = [];
+    blocks.forEach((blk, i) => {
+      const item = parseBlockToVocabItem(blk, i);
+      if (item) {
+        items.push(item);
+      }
+    });
+
+    return items;
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileName(file.name);
+    setParseError(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+
+      setRawText(text);
+      const parsed = parseMultipleBlocksFromText(text);
+      setBatchItems(parsed);
+
+      if (parsed.length === 0) {
+        setParseError(`Đã đọc tệp ${file.name} nhưng không nhận diện được cấu trúc từ vựng. Vui lòng kiểm tra định dạng.`);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleBatchSave = async () => {
+    const itemsToSave = batchItems.length > 0 ? batchItems : parseMultipleBlocksFromText(rawText);
+
+    if (itemsToSave.length === 0) {
+      alert('Không tìm thấy từ vựng nào hợp lệ để thêm.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    let successCount = 0;
+    try {
+      for (let i = 0; i < itemsToSave.length; i++) {
+        setBatchProgress(`Đang lưu từ ${i + 1}/${itemsToSave.length}: ${itemsToSave[i].word}...`);
+        await api.addVocabulary(itemsToSave[i]);
+        successCount++;
+      }
+      onSuccess();
+      onClose();
+      alert(`Đã thêm thành công ${successCount} từ vựng mới vào kho Flashcards!`);
+    } catch (err: any) {
+      console.error('Lỗi khi thêm hàng loạt từ vựng:', err);
+      alert(`Đã thêm ${successCount} từ vựng. Gặp lỗi: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+      setBatchProgress(null);
+    }
+  };
+
+  // Parser for single quick text preview in Form tab
   const handleParseText = () => {
     setParseError(null);
     try {
-      const lines = rawText.split('\n');
-      let parsedWord = '';
-      let parsedIpa = '';
-      let parsedPos: WordClass = 'verb';
-      let parsedCefr: CefrLevel = 'B2';
-      let parsedDefVi = '';
-      let parsedDefEn = '';
-      let parsedTopic = 'General Business';
-      let parsedPart = 'Part 5';
-      let parsedNotes = '';
-
-      const parsedExamples: VocabExample[] = [];
-      const parsedSynonyms: Array<{
-        targetPhrase: string;
-        usageLevel: UsageLevel;
-        context: string;
-        exampleEn: string;
-        exampleVi: string;
-      }> = [];
-      const parsedAntonyms: Array<{
-        targetPhrase: string;
-        usageLevel: UsageLevel;
-        context: string;
-        exampleEn: string;
-        exampleVi: string;
-      }> = [];
-
-      let currentSection: 'header' | 'meaning' | 'examples' | 'synonyms' | 'antonyms' = 'header';
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        const lower = line.toLowerCase();
-
-        // Section detectors
-        if (lower.startsWith('nghĩa')) {
-          currentSection = 'meaning';
-          const colonIdx = line.indexOf(':');
-          if (colonIdx !== -1 && line.slice(colonIdx + 1).trim()) {
-            parsedDefVi = line.slice(colonIdx + 1).trim();
-          }
-          continue;
-        }
-
-        if (lower.includes('ví dụ cho từ vựng') || lower.startsWith('3 ví dụ')) {
-          currentSection = 'examples';
-          continue;
-        }
-
-        if (lower.startsWith('từ đồng nghĩa') || lower.startsWith('đồng nghĩa')) {
-          currentSection = 'synonyms';
-          continue;
-        }
-
-        if (lower.startsWith('từ trái nghĩa') || lower.startsWith('trái nghĩa')) {
-          currentSection = 'antonyms';
-          continue;
-        }
-
-        // Parse within sections
-        if (currentSection === 'header') {
-          const colonIdx = line.indexOf(':');
-          if (colonIdx !== -1) {
-            const key = line.slice(0, colonIdx).trim().toLowerCase();
-            const val = line.slice(colonIdx + 1).trim();
-
-            if (key.includes('từ') || key === 'word') {
-              parsedWord = val.toUpperCase();
-            } else if (key === 'ipa' || key.includes('phiên âm')) {
-              parsedIpa = val;
-            } else if (key.includes('loại từ') || key === 'pos') {
-              const valLower = val.toLowerCase();
-              if (valLower.includes('noun') || valLower.includes('danh')) parsedPos = 'noun';
-              else if (valLower.includes('adj') || valLower.includes('tính')) parsedPos = 'adjective';
-              else if (valLower.includes('adv') || valLower.includes('trạng')) parsedPos = 'adverb';
-              else if (valLower.includes('phrase') || valLower.includes('cụm')) parsedPos = 'phrase';
-              else parsedPos = 'verb';
-            } else if (key.includes('cấp độ') || key.includes('cefr')) {
-              parsedCefr = (val.toUpperCase() as CefrLevel) || 'B2';
-            } else if (key.includes('chủ đề') || key === 'topic') {
-              parsedTopic = val;
-            } else if (key.includes('part') || key.includes('phần')) {
-              parsedPart = val;
-            } else if (key.includes('lưu ý') || key.includes('ghi chú')) {
-              parsedNotes = val;
-            }
-          }
-        } else if (currentSection === 'meaning') {
-          const colonIdx = line.indexOf(':');
-          if (colonIdx !== -1) {
-            const key = line.slice(0, colonIdx).trim().toLowerCase();
-            const val = line.slice(colonIdx + 1).trim();
-            if (key.includes('việt') || key.includes('nghĩa')) {
-              parsedDefVi = val;
-            } else if (key.includes('anh') || key.includes('en') || key.includes('giải thích')) {
-              parsedDefEn = val;
-            }
-          } else if (!parsedDefVi) {
-            parsedDefVi = line.replace(/^[-*•]\s*/, '').trim();
-          }
-        } else if (currentSection === 'examples') {
-          // Parse lines like: "1. Please expedite the shipment. (Vui lòng đẩy nhanh...)"
-          const cleaned = line.replace(/^(\d+[\.\)]|[-*•])\s*/, '').trim();
-          const match = cleaned.match(/^([^(]+)(?:\(([^)]+)\))?$/);
-          if (match) {
-            const exEn = match[1].trim();
-            const exVi = (match[2] || '').trim();
-            if (exEn) {
-              parsedExamples.push({ en: exEn, vi: exVi });
-            }
-          } else if (cleaned) {
-            parsedExamples.push({ en: cleaned, vi: '' });
-          }
-        } else if (currentSection === 'synonyms') {
-          // Parse: "- Speed up: The factory will speed up production. (Nhà máy sẽ...)"
-          const cleaned = line.replace(/^[-*•]\s*/, '').trim();
-          const colonIdx = cleaned.indexOf(':');
-          if (colonIdx !== -1) {
-            const targetPhrase = cleaned.slice(0, colonIdx).trim();
-            const rest = cleaned.slice(colonIdx + 1).trim();
-            const match = rest.match(/^([^(]+)(?:\(([^)]+)\))?$/);
-            const exEn = match ? match[1].trim() : rest;
-            const exVi = match && match[2] ? match[2].trim() : '';
-
-            if (targetPhrase) {
-              parsedSynonyms.push({
-                targetPhrase,
-                usageLevel: 'Cao',
-                context: 'Ngữ cảnh tương đương',
-                exampleEn: exEn,
-                exampleVi: exVi,
-              });
-            }
-          } else {
-            // Comma-separated or bare words
-            cleaned.split(',').forEach((p) => {
-              const phrase = p.trim();
-              if (phrase) {
-                parsedSynonyms.push({
-                  targetPhrase: phrase,
-                  usageLevel: 'Cao',
-                  context: 'Ngữ cảnh công sở',
-                  exampleEn: `We can ${phrase.toLowerCase()} to fulfill the request.`,
-                  exampleVi: `Chúng ta có thể ${phrase.toLowerCase()} để đáp ứng yêu cầu.`,
-                });
-              }
-            });
-          }
-        } else if (currentSection === 'antonyms') {
-          // Parse: "- Delay: Inclement weather will delay departures. (Thời tiết xấu...)"
-          const cleaned = line.replace(/^[-*•]\s*/, '').trim();
-          const colonIdx = cleaned.indexOf(':');
-          if (colonIdx !== -1) {
-            const targetPhrase = cleaned.slice(0, colonIdx).trim();
-            const rest = cleaned.slice(colonIdx + 1).trim();
-            const match = rest.match(/^([^(]+)(?:\(([^)]+)\))?$/);
-            const exEn = match ? match[1].trim() : rest;
-            const exVi = match && match[2] ? match[2].trim() : '';
-
-            if (targetPhrase) {
-              parsedAntonyms.push({
-                targetPhrase,
-                usageLevel: 'Cao',
-                context: 'Ngữ cảnh đối lập',
-                exampleEn: exEn,
-                exampleVi: exVi,
-              });
-            }
-          } else {
-            cleaned.split(',').forEach((p) => {
-              const phrase = p.trim();
-              if (phrase) {
-                parsedAntonyms.push({
-                  targetPhrase: phrase,
-                  usageLevel: 'Cao',
-                  context: 'Ngữ cảnh đối lập',
-                  exampleEn: `They chose not to ${phrase.toLowerCase()} at this time.`,
-                  exampleVi: `Họ chọn không ${phrase.toLowerCase()} vào thời điểm này.`,
-                });
-              }
-            });
-          }
-        }
-      }
-
-      if (!parsedWord || !parsedDefVi) {
+      const parsed = parseMultipleBlocksFromText(rawText);
+      if (parsed.length === 0) {
         setParseError('Không nhận diện được Từ vựng hoặc Nghĩa tiếng Việt. Vui lòng kiểm tra lại văn bản.');
         return;
       }
 
-      // Ensure 3 examples
-      while (parsedExamples.length < 3) {
-        const idx = parsedExamples.length + 1;
-        parsedExamples.push({
-          en: `Example ${idx}: Employees should be familiar with "${parsedWord.toLowerCase()}".`,
-          vi: `Ví dụ ${idx}: Nhân viên nên làm quen với từ "${parsedWord.toLowerCase()}".`,
-        });
+      const firstItem = parsed[0];
+      setWord(firstItem.word);
+      setIpa(firstItem.ipa);
+      setPartOfSpeech(firstItem.partOfSpeech);
+      setCefrLevel(firstItem.cefrLevel);
+      setTopic(firstItem.topic);
+      setToeicPart(firstItem.toeicPart);
+      setDefinitionVi(firstItem.definitionVi);
+      setDefinitionEn(firstItem.definitionEn);
+      if (firstItem.examples && firstItem.examples.length > 0) {
+        setExamples(firstItem.examples);
+      }
+      if (firstItem.synonyms && firstItem.synonyms.length > 0) {
+        setSynonyms(
+          firstItem.synonyms.map((s) => ({
+            targetPhrase: s.targetPhrase,
+            usageLevel: s.usageLevel,
+            context: s.context,
+            exampleEn: s.supportingExample,
+            exampleVi: s.supportingExampleVi || '',
+          }))
+        );
+      }
+      if (firstItem.antonyms && firstItem.antonyms.length > 0) {
+        setAntonyms(
+          firstItem.antonyms.map((a) => ({
+            targetPhrase: a.targetPhrase,
+            usageLevel: a.usageLevel,
+            context: a.context,
+            exampleEn: a.supportingExample,
+            exampleVi: a.supportingExampleVi || '',
+          }))
+        );
       }
 
-      // Populate Form states
-      setWord(parsedWord);
-      setIpa(parsedIpa || `/${parsedWord.toLowerCase()}/`);
-      setPartOfSpeech(parsedPos);
-      setCefrLevel(parsedCefr);
-      setTopic(parsedTopic);
-      setToeicPart(parsedPart);
-      setDefinitionVi(parsedDefVi);
-      setDefinitionEn(parsedDefEn || parsedDefVi);
-      setExamples(parsedExamples.slice(0, 3));
-      if (parsedSynonyms.length > 0) setSynonyms(parsedSynonyms);
-      if (parsedAntonyms.length > 0) setAntonyms(parsedAntonyms);
-      if (parsedNotes) setContextNotes(parsedNotes);
-
-      // Switch to Form tab to review
+      setBatchItems(parsed);
       setActiveTab('form');
     } catch (e: any) {
       setParseError('Lỗi khi phân tích: ' + e.message);
@@ -380,7 +506,7 @@ Từ trái nghĩa:
         examples: sanitizedExamples,
         topic,
         toeicPart,
-        sourceDoc: 'User Added Text',
+        sourceDoc: fileName ? `Imported from ${fileName}` : 'User Added Text',
         contextNotes: contextNotes.trim() || undefined,
         synonyms: synonyms
           .filter((s) => s.targetPhrase.trim())
@@ -445,7 +571,7 @@ Từ trái nghĩa:
             </div>
             <div>
               <h3 className="font-extrabold text-base md:text-lg text-slate-900 dark:text-white">
-                Thêm Flashcard Từ vựng theo Cấu trúc chuẩn
+                Thêm Flashcard Từ vựng (Text & Tệp .txt hàng loạt)
               </h3>
               <p className="text-xs text-slate-500">
                 Từ vựng ➔ Nghĩa ➔ 3 Ví dụ ➔ Từ đồng nghĩa & Ví dụ ➔ Từ trái nghĩa & Ví dụ
@@ -472,7 +598,7 @@ Từ trái nghĩa:
                 : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            Nhập văn bản nhanh (Quick Text Paste)
+            Nhập / Tải tệp .txt (File Upload & Quick Text)
           </button>
           <button
             type="button"
@@ -491,17 +617,65 @@ Từ trái nghĩa:
         <div className="p-6 flex-1 overflow-y-auto">
           {activeTab === 'quickText' ? (
             <div className="space-y-4">
-              <div className="p-3.5 bg-sky-50 dark:bg-sky-950/40 rounded-2xl border border-sky-100 dark:border-sky-900/40 text-xs text-slate-700 dark:text-slate-300">
-                <div className="font-bold text-sky-800 dark:text-sky-300 flex items-center gap-1.5 mb-1">
-                  <Sparkles className="w-4 h-4 text-sky-600" />
-                  <span>Cấu trúc chuẩn Flashcard:</span>
+              {/* File Upload Zone */}
+              <div className="p-4 bg-sky-50/70 dark:bg-sky-950/30 rounded-2xl border-2 border-dashed border-sky-300 dark:border-sky-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900 dark:text-white text-sm">
+                      Tải lên tệp văn bản (.txt) để thêm nhiều từ cùng 1 lúc
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
+                      Hệ thống tự động phân tách các khối từ vựng bằng dấu `---` hoặc tiêu đề `Từ vựng:`
+                    </p>
+                  </div>
                 </div>
-                <p className="leading-relaxed">
-                  Dán hoặc gõ văn bản theo cấu trúc: <strong>Từ vựng</strong>, <strong>Nghĩa</strong>,{' '}
-                  <strong>3 ví dụ cho từ vựng</strong> (có bản dịch), <strong>Từ đồng nghĩa & Ví dụ</strong>,{' '}
-                  <strong>Từ trái nghĩa & Ví dụ</strong>. Hệ thống sẽ tự động bóc tách thành flashcard hoàn chỉnh!
-                </p>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".txt"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold text-xs shadow-xs transition-colors cursor-pointer shrink-0"
+                >
+                  Chọn tệp .txt từ máy tính
+                </button>
               </div>
+
+              {/* Status banner when file is uploaded or multi-items detected */}
+              {(fileName || batchItems.length > 0) && (
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>
+                      {fileName ? `Tệp "${fileName}": ` : ''}
+                      Đã nhận diện thành công <strong>{batchItems.length > 0 ? batchItems.length : parseMultipleBlocksFromText(rawText).length} từ vựng</strong> trong danh sách.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleBatchSave}
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs transition-colors shrink-0"
+                  >
+                    {isSubmitting ? 'Đang thêm...' : `Lưu hàng loạt ${batchItems.length > 0 ? batchItems.length : parseMultipleBlocksFromText(rawText).length} từ vựng`}
+                  </button>
+                </div>
+              )}
+
+              {batchProgress && (
+                <div className="p-3 bg-sky-100 dark:bg-sky-950 rounded-xl text-xs text-sky-800 dark:text-sky-300 font-semibold animate-pulse">
+                  {batchProgress}
+                </div>
+              )}
 
               {parseError && (
                 <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
@@ -511,33 +685,68 @@ Từ trái nghĩa:
               )}
 
               <div>
-                <label className="font-bold text-xs text-slate-700 dark:text-slate-300 block mb-1">
-                  Soạn thảo hoặc dán nội dung từ vựng:
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-xs text-slate-700 dark:text-slate-300 block">
+                    Nội dung văn bản (Có thể dán trực tiếp hoặc sửa từ tệp .txt):
+                  </label>
+                  <span className="text-[11px] text-slate-400">
+                    Mỗi từ phân cách bằng `---`
+                  </span>
+                </div>
                 <textarea
-                  rows={14}
+                  rows={12}
                   value={rawText}
-                  onChange={(e) => setRawText(e.target.value)}
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    setRawText(text);
+                    const parsed = parseMultipleBlocksFromText(text);
+                    setBatchItems(parsed);
+                  }}
                   className="w-full p-4 font-mono text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-sky-500 focus:outline-none dark:text-white leading-relaxed"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="button"
-                  onClick={handleParseText}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
-                >
-                  <span>Phân tích văn bản & Xem thẻ</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+              <div className="flex items-center justify-between pt-2">
+                <div className="text-xs text-slate-500">
+                  {batchItems.length > 1 ? (
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                      Chế độ thêm hàng loạt ({batchItems.length} từ vựng được phát hiện)
+                    </span>
+                  ) : (
+                    <span>Nhập 1 từ hoặc phân tách nhiều từ bằng `---`</span>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+
+                  {batchItems.length > 1 ? (
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleBatchSave}
+                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>{isSubmitting ? 'Đang lưu...' : `Thêm hàng loạt ${batchItems.length} từ vựng`}</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleParseText}
+                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                    >
+                      <span>Phân tích văn bản & Xem thẻ</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
