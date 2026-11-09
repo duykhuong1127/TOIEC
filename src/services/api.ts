@@ -1,83 +1,86 @@
-import {
-  VocabularyItem,
-  SourceDocumentInfo,
-  ReviewRating,
-} from '../types';
+import type { VocabularyItem, SourceDocumentInfo, ReviewRating } from '../types';
+
+// Leave empty when /api is served on the same domain.
+// For a separate backend, set VITE_API_BASE_URL to its HTTPS origin and rebuild.
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  reply?: string;
+  isBookmarked?: boolean;
+}
+
+async function requestJson<T>(route: string, init?: RequestInit): Promise<ApiResponse<T>> {
+  const response = await fetch(`${API_BASE}${route}`, init);
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.toLowerCase().includes('application/json')) {
+    throw new Error(
+      `API ${route} trả về HTTP ${response.status}, không phải JSON. ` +
+      'Kiểm tra backend Express, cấu hình /api trên Vercel hoặc VITE_API_BASE_URL.'
+    );
+  }
+
+  let payload: ApiResponse<T>;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(`API ${route} trả về JSON không hợp lệ (HTTP ${response.status}).`);
+  }
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error(`API ${route} trả về dữ liệu sai cấu trúc.`);
+  }
+  if (!response.ok || payload.success !== true) {
+    throw new Error(payload.error || `Yêu cầu API thất bại (HTTP ${response.status}).`);
+  }
+  return payload;
+}
+
+function post<T>(route: string, body: unknown) {
+  return requestJson<T>(route, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
 
 export const api = {
-  // Vocabulary
   async getVocabulary(params?: {
-    topic?: string;
-    toeicPart?: string;
-    priority?: string;
-    search?: string;
-    state?: string;
+    topic?: string; toeicPart?: string; priority?: string; search?: string; state?: string;
   }): Promise<VocabularyItem[]> {
     const query = new URLSearchParams();
-    if (params?.topic) query.set('topic', params.topic);
-    if (params?.toeicPart) query.set('toeicPart', params.toeicPart);
-    if (params?.priority) query.set('priority', params.priority);
-    if (params?.search) query.set('search', params.search);
-    if (params?.state) query.set('state', params.state);
-
-    const res = await fetch(`/api/vocabulary?${query.toString()}`);
-    const data = await res.json();
-    return data.data || [];
+    for (const [key, value] of Object.entries(params || {})) {
+      if (value) query.set(key, value);
+    }
+    const result = await requestJson<VocabularyItem[]>(`/api/vocabulary?${query}`);
+    if (!Array.isArray(result.data)) throw new Error('API thiếu danh sách từ vựng hợp lệ.');
+    return result.data;
   },
-
   async getVocabularyById(id: string): Promise<VocabularyItem | null> {
-    const res = await fetch(`/api/vocabulary/${id}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.data || null;
+    const result = await requestJson<VocabularyItem>(`/api/vocabulary/${encodeURIComponent(id)}`);
+    return result.data || null;
   },
-
   async addVocabulary(item: Partial<VocabularyItem>): Promise<VocabularyItem> {
-    const res = await fetch('/api/vocabulary', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item),
-    });
-    const data = await res.json();
-    return data.data;
+    const result = await post<VocabularyItem>('/api/vocabulary', item);
+    if (!result.data?.id) throw new Error('Máy chủ chưa xác nhận đã lưu từ vựng.');
+    return result.data;
   },
-
-  // Spaced Repetition (FSRS / SM-2)
-  async submitReview(vocabId: string, rating: ReviewRating): Promise<any> {
-    const res = await fetch('/api/flashcards/review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vocabId, rating }),
-    });
-    return res.json();
+  async submitReview(vocabId: string, rating: ReviewRating): Promise<ApiResponse<any>> {
+    return post('/api/flashcards/review', { vocabId, rating });
   },
-
   async toggleBookmark(vocabId: string): Promise<boolean> {
-    const res = await fetch('/api/flashcards/bookmark', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vocabId }),
-    });
-    const data = await res.json();
-    return !!data.isBookmarked;
+    const result = await post('/api/flashcards/bookmark', { vocabId });
+    if (typeof result.isBookmarked !== 'boolean') throw new Error('API thiếu trạng thái đánh dấu sao.');
+    return result.isBookmarked;
   },
-
-
-  // Documents
   async getDocuments(): Promise<SourceDocumentInfo[]> {
-    const res = await fetch('/api/documents');
-    const data = await res.json();
-    return data.data || [];
+    const result = await requestJson<SourceDocumentInfo[]>('/api/documents');
+    if (!Array.isArray(result.data)) throw new Error('API thiếu danh sách tài liệu hợp lệ.');
+    return result.data;
   },
-
-  // AI Tutor
   async askAiTutor(message: string, context?: any): Promise<string> {
-    const res = await fetch('/api/gemini/tutor', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, context }),
-    });
-    const data = await res.json();
-    return data.reply || 'Không có phản hồi từ AI.';
+    const result = await post('/api/gemini/tutor', { message, context });
+    return result.reply || 'Không có phản hồi từ AI.';
   },
 };
