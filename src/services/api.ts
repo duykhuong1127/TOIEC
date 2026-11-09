@@ -74,6 +74,19 @@ export const api = {
     if (typeof result.isBookmarked !== 'boolean') throw new Error('API thiếu trạng thái đánh dấu sao.');
     return result.isBookmarked;
   },
+  async removeDuplicateVocabulary(): Promise<{ removedCount: number; duplicateWords: string[] }> {
+    const result = await post<{ removedCount: number; duplicateWords: string[] }>('/api/vocabulary/deduplicate', {});
+    return {
+      removedCount: (result as any).removedCount || 0,
+      duplicateWords: (result as any).duplicateWords || [],
+    };
+  },
+  async deleteVocabulary(id: string): Promise<boolean> {
+    const result = await requestJson<{ message: string }>(`/api/vocabulary/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    return result.success;
+  },
   async getDocuments(): Promise<SourceDocumentInfo[]> {
     const result = await requestJson<SourceDocumentInfo[]>('/api/documents');
     if (!Array.isArray(result.data)) throw new Error('API thiếu danh sách tài liệu hợp lệ.');

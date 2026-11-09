@@ -269,6 +269,58 @@ class DatabaseService {
     return item;
   }
 
+  public deleteVocabularyItem(id: string): boolean {
+    const idx = this.data.vocabulary.findIndex((v) => v.id === id);
+    if (idx === -1) return false;
+    this.data.vocabulary.splice(idx, 1);
+    delete this.data.reviews[id];
+    this.saveData();
+    return true;
+  }
+
+  public removeDuplicates(): { removedCount: number; duplicateWords: string[] } {
+    const seen = new Map<string, string>(); // wordUpper -> original vocabId to keep
+    const toRemoveIds = new Set<string>();
+    const duplicateWordsSet = new Set<string>();
+
+    this.data.vocabulary.forEach((item) => {
+      const normalized = (item.word || '').trim().toUpperCase();
+      if (!normalized) return;
+
+      if (seen.has(normalized)) {
+        const existingId = seen.get(normalized)!;
+        const existingRev = this.data.reviews[existingId];
+        const currentRev = this.data.reviews[item.id];
+
+        if (
+          currentRev &&
+          (!existingRev ||
+            (currentRev.repetitionCount || 0) > (existingRev.repetitionCount || 0) ||
+            (currentRev.isBookmarked && !existingRev.isBookmarked))
+        ) {
+          toRemoveIds.add(existingId);
+          seen.set(normalized, item.id);
+        } else {
+          toRemoveIds.add(item.id);
+        }
+        duplicateWordsSet.add(normalized);
+      } else {
+        seen.set(normalized, item.id);
+      }
+    });
+
+    if (toRemoveIds.size > 0) {
+      this.data.vocabulary = this.data.vocabulary.filter((v) => !toRemoveIds.has(v.id));
+      toRemoveIds.forEach((id) => delete this.data.reviews[id]);
+      this.saveData();
+    }
+
+    return {
+      removedCount: toRemoveIds.size,
+      duplicateWords: Array.from(duplicateWordsSet),
+    };
+  }
+
   // --- Spaced Repetition Review Algorithm (FSRS/SuperMemo hybrid) ---
   public submitReviewRating(
     vocabId: string,

@@ -65,6 +65,31 @@ app.post('/api/vocabulary', (req: Request, res: Response) => {
   }
 });
 
+app.post('/api/vocabulary/deduplicate', (_req: Request, res: Response) => {
+  try {
+    const result = db.removeDuplicates();
+    res.json({
+      success: true,
+      removedCount: result.removedCount,
+      duplicateWords: result.duplicateWords,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/vocabulary/:id', (req: Request, res: Response) => {
+  try {
+    const deleted = db.deleteVocabularyItem(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Vocabulary item not found' });
+    }
+    res.json({ success: true, message: 'Deleted vocabulary item' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 2. Flashcard Reviews & Spaced Repetition (FSRS / SM-2)
 app.get('/api/flashcards/reviews', (_req: Request, res: Response) => {
   res.json({ success: true, data: db.getReviews() });
