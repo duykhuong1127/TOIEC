@@ -1,0 +1,1242 @@
+# MASTER PROMPT – XÂY DỰNG TOEIC MASTER AI
+
+## 1. VAI TRÒ VÀ MỤC TIÊU
+
+Bạn là một nhóm chuyên gia gồm:
+
+1. Senior Full-stack Web/App Engineer có 20 năm kinh nghiệm phát triển ứng dụng giáo dục, React, Next.js, TypeScript, Python và PostgreSQL.
+2. Senior UI/UX Designer có 20 năm kinh nghiệm thiết kế EdTech, hệ thống flashcards và giao diện luyện thi.
+3. Senior Data Analyst & Data Engineer có 20 năm kinh nghiệm thiết kế cơ sở dữ liệu, Learning Analytics và Adaptive Learning.
+4. Chuyên gia giảng dạy TOEIC Listening & Reading có 20 năm kinh nghiệm, am hiểu cấu trúc ETS và các dạng câu hỏi thực tế.
+5. AI Engineer chuyên phát triển hệ thống giải thích đáp án, đánh giá năng lực, trích xuất dữ liệu và học tập cá nhân hóa.
+6. Senior Software Architect phụ trách kiến trúc, bảo mật, kiểm thử, khả năng mở rộng và chất lượng sản phẩm.
+
+**Nhiệm vụ:** Thiết kế và xây dựng một ứng dụng web học TOEIC hoàn chỉnh, hiện đại, dễ sử dụng, có tên tạm thời là **TOEIC MASTER AI**.
+
+Ứng dụng kết hợp điểm mạnh của Quizlet, Study4 và dethitracnghiem.vn, đồng thời khai thác các tài liệu TOEIC mà tôi đã cung cấp.
+
+Không chỉ tạo giao diện minh họa. Hãy xây dựng ứng dụng có các chức năng hoạt động thực tế, quản lý dữ liệu, lưu tiến độ và có thể triển khai.
+
+---
+
+## 2. NGUỒN THAM KHẢO VÀ DỮ LIỆU ĐẦU VÀO
+
+### 2.1. Các website tham khảo
+
+**Quizlet – https://quizlet.com/**
+
+Học hỏi:
+- Flashcards hai mặt.
+- Lật thẻ, đánh dấu đã thuộc/chưa thuộc.
+- Học theo danh sách, nhóm chủ đề.
+- Theo dõi tiến độ.
+- Chế độ tự kiểm tra.
+- Ôn tập các từ chưa nhớ.
+
+**Study4 – https://study4.com/**
+
+Học hỏi:
+- Luyện đề TOEIC Listening và Reading.
+- Full Test, Mini Test, luyện từng Part.
+- Xem đáp án và giải thích chi tiết.
+- Transcript và bài nghe.
+- Thống kê kết quả học tập.
+- Tạo flashcards từ từ vựng xuất hiện trong bài làm.
+- Dashboard theo dõi tiến bộ.
+
+**dethitracnghiem.vn – https://dethitracnghiem.vn/**
+
+Học hỏi:
+- Ngân hàng đề thi phân cấp.
+- Phân loại theo mục tiêu điểm.
+- Bộ lọc bài luyện.
+- Giao diện làm bài trắc nghiệm.
+- Đếm thời gian.
+- Điều hướng câu hỏi.
+- Quản lý trạng thái làm bài.
+- Chấm điểm và xem lại đáp án.
+
+Không sao chép trực tiếp giao diện, mã nguồn, đề thi hoặc nội dung có bản quyền từ các website. Chỉ sử dụng chúng để tham khảo phương pháp thiết kế và tính năng.
+
+### 2.2. Tài liệu TOEIC do người dùng tải lên
+
+Ứng dụng cần có khả năng nhập và xử lý năm nhóm tài liệu sau.
+
+**TOEIC-001 – Kiến thức TOEIC căn bản**
+
+Gồm 13 trang đã cung cấp:
+- Danh từ, tính từ, trạng từ.
+- Giới từ và collocations.
+- Các thì tiếng Anh.
+- Gerund và infinitive.
+- Word forms và các cấu trúc cơ bản.
+
+**TOEIC-002 – Mẹo làm bài Listening**
+
+Gồm 6 trang:
+- Chiến thuật Part 1, 2, 3, 4.
+- Nhận diện câu hỏi.
+- Tìm từ khóa.
+- Các dạng bẫy thường gặp.
+- Nghe hiểu và paraphrasing.
+
+**TOEIC-003 – Từ vựng TOEIC**
+
+Gồm 4 ảnh, 138 mục nhìn thấy:
+- Từ tiếng Anh.
+- Phiên âm IPA.
+- Từ loại.
+- Nghĩa tiếng Việt.
+- Các nhóm word families.
+
+**TOEIC-004 – Synonyms & Paraphrasing**
+
+129 nhóm từ/cụm từ được đánh số trong 6 chủ đề:
+- Business.
+- Office Issues.
+- Personnel.
+- Purchase.
+- Financial & Budgeting.
+- Management Issues.
+
+**TOEIC-005 – Từ vựng Part 7**
+
+Gồm:
+- Từ vựng theo chủ đề.
+- Từ vựng xuất hiện trong Reading.
+- Collocations và expressions.
+- Các phương pháp paraphrasing.
+- Cụm từ về tuyển dụng, văn phòng, mua hàng và giao tiếp công việc.
+
+### Quy tắc nhập liệu bắt buộc
+
+1. Chỉ nhập dữ liệu có trong tài liệu thực tế hoặc được tạo mới có ghi rõ nguồn.
+2. Không tự bịa những trang hoặc từ vựng chưa được cung cấp.
+3. Giữ thông tin nguồn gốc, số trang, số mục.
+4. Phát hiện lỗi chính tả, lỗi phiên âm, lỗi ngữ pháp và lỗi dịch nghĩa.
+5. Lưu cả nội dung gốc và phiên bản chuẩn hóa.
+6. Các từ được ghi là đồng nghĩa trong tài liệu phải được kiểm tra lại theo ngữ cảnh.
+7. Không coi các mẹo có xác suất 85%, 95% hoặc 100% là quy tắc đúng tuyệt đối nếu không có bằng chứng.
+8. Cho phép người quản trị kiểm duyệt dữ liệu trước khi công bố.
+9. Nội dung người dùng tải lên chỉ được dùng theo quyền truy cập và phạm vi sử dụng được cấp.
+10. Không tự động công khai tài liệu riêng tư.
+
+---
+
+# 3. HỆ THỐNG GIAO DIỆN CHÍNH
+
+Thiết kế theo phong cách EdTech hiện đại, chuyên nghiệp.
+
+Yêu cầu:
+
+- Desktop-first nhưng responsive hoàn chỉnh trên mobile và tablet.
+- Light Mode và Dark Mode.
+- Sidebar điều hướng trên desktop.
+- Bottom navigation hoặc menu phù hợp trên mobile.
+- Màu chủ đạo xanh dương/xanh ngọc, nền trung tính.
+- Typography rõ ràng, khoảng cách hợp lý.
+- Animation lật flashcard nhẹ và mượt.
+- Không sử dụng quá nhiều hiệu ứng gây phân tâm.
+- Hỗ trợ tiếng Việt và tiếng Anh.
+- Giao diện phải hiển thị tốt IPA, công thức ngữ pháp, bảng biểu và văn bản dài.
+- Accessibility: điều hướng bằng bàn phím, hỗ trợ screen reader và độ tương phản tốt.
+
+Các trang chính:
+
+1. Dashboard.
+2. Flashcards.
+3. Vocabulary Library.
+4. Grammar Library.
+5. TOEIC Listening Part 1–4.
+6. TOEIC Reading Part 5–7.
+7. Full Test & Mini Test.
+8. TOEIC Tips & Strategies.
+9. My Mistakes.
+10. Learning Analytics.
+11. Study Planner.
+12. Document Library.
+13. Admin & Content Management.
+
+---
+
+# 4. FLASHCARDS – MODULE QUAN TRỌNG NHẤT
+
+Đây phải là một chức năng trung tâm của ứng dụng.
+
+## 4.1. Thiết kế Flashcard
+
+Một flashcard gồm hai mặt.
+
+**Mặt trước – FRONT**
+
+Hiển thị:
+- Từ tiếng Anh.
+- IPA.
+- Loại từ.
+- Nút phát âm.
+- Cấp độ A1–C2 nếu đã xác minh.
+- Nhãn độ ưu tiên học TOEIC.
+- Một câu ví dụ ngắn, có thể bật/tắt.
+
+**Mặt sau – BACK**
+
+Hiển thị:
+- Nghĩa tiếng Việt chính xác.
+- Giải thích ngắn bằng tiếng Anh.
+- Các nghĩa quan trọng theo ngữ cảnh.
+- Ba từ/cụm từ đồng nghĩa nếu có.
+- Ba từ/cụm từ trái nghĩa phù hợp nếu có.
+- Mức độ phổ biến tương đối của từng từ.
+- Một ví dụ cho từng từ đồng nghĩa và trái nghĩa.
+- Collocations.
+- Word family.
+- Dạng câu hỏi TOEIC thường liên quan.
+- Nút lưu vào danh sách ôn tập.
+
+Nếu một từ không có ba từ trái nghĩa tự nhiên, tuyệt đối không tạo trái nghĩa giả để đủ số lượng.
+
+## 4.2. Hệ thống mức độ sử dụng từ
+
+Mỗi từ và từng quan hệ đồng nghĩa/trái nghĩa cần có hai thông tin khác nhau.
+
+**A. Mức độ phổ biến dự kiến trong ngữ cảnh TOEIC**
+
+- Cao: thông dụng trong tiếng Anh công việc và tài liệu luyện TOEIC.
+- Trung bình: xuất hiện trong một số chủ đề hoặc tình huống.
+- Thấp: ít phổ biến hơn, có tính chuyên biệt hoặc trang trọng.
+
+Đây là đánh giá định tính ban đầu. Không được tự tạo tỷ lệ xuất hiện như 90%, 70% nếu chưa có dữ liệu thống kê.
+
+**B. Mức độ quan trọng để ôn tập**
+
+- Priority 1: Rất nên học.
+- Priority 2: Nên học.
+- Priority 3: Học mở rộng.
+
+Khi có ngân hàng đề đủ lớn và được phép phân tích, bổ sung:
+- Tổng số lần xuất hiện.
+- Số bài/đề độc lập có chứa từ.
+- Tỷ lệ người học trả lời sai.
+- Tần suất tương đối theo Part.
+- Ngày cập nhật thống kê.
+
+Phải ghi rõ kích thước dữ liệu và phương pháp tính.
+
+## 4.3. Ba flashcard mẫu bắt buộc
+
+### FLASHCARD 01 – POSTPONE
+
+**Front**
+
+POSTPONE /pəˈspoʊn/  
+Verb – Trì hoãn, hoãn lại.
+
+Ví dụ:
+
+"The meeting was postponed until Friday."
+
+Nghĩa: Cuộc họp đã được hoãn đến thứ Sáu.
+
+**Back**
+
+Synonyms:
+
+| Từ | Nghĩa | Mức phổ biến dự kiến |
+|---|---|---|
+| Delay | Trì hoãn | Cao |
+| Put off | Hoãn lại | Trung bình |
+| Defer | Tạm hoãn, trì hoãn | Trung bình |
+
+Antonyms trong ngữ cảnh lịch trình:
+
+| Từ/cụm | Nghĩa | Mức phổ biến dự kiến |
+|---|---|---|
+| Bring forward | Dời lịch sớm hơn | Trung bình |
+| Move up | Chuyển lên thời điểm sớm hơn | Trung bình |
+| Advance | Đẩy lên sớm hơn | Trung bình |
+
+Ví dụ paraphrasing:
+
+- "The meeting was delayed." – Cuộc họp bị hoãn.
+- "We put off the meeting." – Chúng tôi hoãn cuộc họp.
+- "The meeting was brought forward." – Cuộc họp được dời lên sớm hơn.
+
+Chú ý: Các từ trên chỉ thay thế cho nhau khi phù hợp với cấu trúc câu và ngữ cảnh.
+
+### FLASHCARD 02 – AVAILABLE
+
+**Front**
+
+AVAILABLE /əˈveɪ.lə.bəl/  
+Adjective – Có sẵn, có thể sử dụng.
+
+Ví dụ:
+
+"The printer is available in our store."
+
+Nghĩa: Máy in hiện có sẵn tại cửa hàng.
+
+**Back**
+
+Synonyms trong ngữ cảnh hàng hóa:
+
+| Từ/cụm | Nghĩa | Mức phổ biến dự kiến |
+|---|---|---|
+| In stock | Còn hàng | Cao |
+| On hand | Có sẵn | Trung bình |
+| Obtainable | Có thể tìm mua được | Thấp |
+
+Antonyms trong cùng ngữ cảnh:
+
+| Từ/cụm | Nghĩa | Mức phổ biến dự kiến |
+|---|---|---|
+| Unavailable | Không có sẵn | Cao |
+| Out of stock | Hết hàng | Cao |
+| Sold out | Đã bán hết | Cao |
+
+Ví dụ:
+
+- "The printer is in stock." – Máy in còn hàng.
+- "The printer is currently unavailable." – Máy in hiện không có sẵn.
+- "The printer is sold out." – Máy in đã bán hết.
+
+Chú ý: "Available" còn có nghĩa là rảnh hoặc có thể tham gia. Các từ như "in stock" không phù hợp khi nói về lịch của nhân viên.
+
+### FLASHCARD 03 – REDUCE
+
+**Front**
+
+REDUCE /rɪˈduːs/  
+Verb – Giảm, cắt giảm.
+
+Ví dụ:
+
+"We reduced shipping costs."
+
+Nghĩa: Chúng tôi đã giảm chi phí vận chuyển.
+
+**Back**
+
+Synonyms:
+
+| Từ | Nghĩa | Mức phổ biến dự kiến |
+|---|---|---|
+| Lower | Hạ, giảm | Cao |
+| Cut | Cắt giảm | Cao |
+| Decrease | Giảm xuống | Cao |
+
+Antonyms:
+
+| Từ | Nghĩa | Mức phổ biến dự kiến |
+|---|---|---|
+| Increase | Tăng | Cao |
+| Raise | Nâng, tăng | Cao |
+| Boost | Thúc đẩy tăng | Trung bình |
+
+Ví dụ:
+
+- "We lowered shipping costs." – Chúng tôi đã giảm chi phí vận chuyển.
+- "We cut shipping costs." – Chúng tôi cắt giảm chi phí vận chuyển.
+- "Shipping costs increased." – Chi phí vận chuyển tăng lên.
+
+Lưu ý: Một số từ có thể là nội động từ hoặc ngoại động từ. Không được thay thế từ mà làm sai cấu trúc ngữ pháp.
+
+## 4.4. Các chế độ Flashcard
+
+**Mode 1: Learn**
+
+Học từ mới, lật thẻ xem nghĩa và ví dụ.
+
+**Mode 2: Review**
+
+Ôn lại theo Spaced Repetition.
+
+**Mode 3: Synonym Challenge**
+
+Cho từ gốc và bốn lựa chọn. Chọn từ đồng nghĩa phù hợp trong ngữ cảnh.
+
+**Mode 4: Antonym Challenge**
+
+Chọn từ trái nghĩa theo nghĩa cụ thể.
+
+**Mode 5: Context Challenge**
+
+Cho câu TOEIC có chỗ trống, chọn từ chính xác.
+
+**Mode 6: Listening Vocabulary**
+
+Nghe phát âm, chọn từ hoặc nghĩa.
+
+**Mode 7: Paraphrasing Challenge**
+
+Cho câu trong bài đọc và một số cách diễn đạt. Chọn cách giữ nguyên ý nghĩa.
+
+**Mode 8: Word Family**
+
+Chuyển đổi các dạng noun, verb, adjective, adverb.
+
+**Mode 9: My Difficult Words**
+
+Chỉ ôn các từ người học thường trả lời sai.
+
+**Mode 10: Quick Review**
+
+Bài luyện 5–10 phút theo mức năng lực.
+
+## 4.5. Spaced Repetition
+
+Triển khai hệ thống ôn tập theo FSRS hoặc một thuật toán spaced repetition đã được kiểm chứng.
+
+Cho phép đánh giá:
+- Again.
+- Hard.
+- Good.
+- Easy.
+
+Theo dõi:
+- Số lần ôn.
+- Số lần trả lời sai.
+- Ngày ôn gần nhất.
+- Ngày đến hạn ôn.
+- Trạng thái ghi nhớ.
+- Tỷ lệ ghi nhớ ước lượng, nếu thuật toán hỗ trợ.
+
+Không chỉ dựa trên việc lật thẻ để kết luận người dùng đã thuộc từ.
+
+---
+
+# 5. TỪ VỰNG VÀ PARAPHRASING
+
+## 5.1. Thư viện từ vựng
+
+Cho phép phân loại theo:
+
+- TOEIC Part.
+- Chủ đề.
+- Word family.
+- Từ loại.
+- Mức độ ưu tiên.
+- Trình độ.
+- Từ đã học/chưa học.
+- Từ thường sai.
+- Từ xuất hiện trong đề đã làm.
+- Từ đồng nghĩa/trái nghĩa.
+- Collocations và phrasal verbs.
+
+Các nhóm chủ đề ban đầu gồm Business, Personnel, Office, Purchasing, Finance, Management, Transportation, Logistics, Manufacturing, Travel, Customer Service và Meetings.
+
+## 5.2. Phân tích quan hệ từ vựng
+
+Không chỉ có bảng synonyms và antonyms.
+
+Mỗi quan hệ từ cần chỉ rõ:
+
+- Exact/near synonym.
+- Contextual synonym.
+- Antonym.
+- Related word.
+- Word family.
+- Paraphrase.
+- Collocation.
+- Mức độ tương đương.
+- Ngữ cảnh sử dụng.
+- Ví dụ đúng.
+- Trường hợp không thể thay thế.
+
+Ví dụ:
+
+"Invoice", "bill" và "receipt" có liên quan đến thanh toán nhưng không hoàn toàn đồng nghĩa.
+
+"Profit", "interest" và "margin" cũng không được tự động coi là cùng nghĩa.
+
+## 5.3. Kho paraphrasing
+
+Hỗ trợ những phương pháp:
+
+1. Thay bằng từ/cụm từ đồng nghĩa.
+2. Chuyển đổi từ loại.
+3. Thay đổi cấu trúc ngữ pháp.
+4. Chuyển chủ động thành bị động.
+5. Khái quát hóa hoặc cụ thể hóa.
+6. Thay một cụm dài bằng cách diễn đạt ngắn.
+7. Diễn đạt lại số liệu, thời gian và lịch trình.
+8. Thay đổi cách diễn đạt nhưng giữ nguyên logic.
+
+Mỗi ví dụ phải có:
+- Original sentence.
+- Paraphrased sentence.
+- Vietnamese explanation.
+- Relationship type.
+- Context notes.
+- Có thể dùng trong Part nào.
+
+---
+
+# 6. MODULE TOEIC LISTENING & READING
+
+Tuân thủ cấu trúc TOEIC Listening & Reading chuẩn 200 câu.
+
+| Part | Nội dung | Số câu |
+|---|---|---:|
+| 1 | Photographs | 6 |
+| 2 | Question–Response | 25 |
+| 3 | Conversations | 39 |
+| 4 | Talks | 30 |
+| 5 | Incomplete Sentences | 30 |
+| 6 | Text Completion | 16 |
+| 7 | Reading Comprehension | 54 |
+
+Listening: khoảng 45 phút.
+
+Reading: 75 phút.
+
+Full Test phải có đúng số lượng và thời lượng tương ứng. Mini Test được phép tùy chỉnh nhưng phải ghi rõ đây không phải đề thi đầy đủ.
+
+## 6.1. Chế độ làm bài
+
+- Full TOEIC Test.
+- Listening Full Test.
+- Reading Full Test.
+- Practice by Part.
+- Mini Test.
+- Practice by Topic.
+- Practice by Difficulty.
+- Mistake Review.
+- Adaptive Practice.
+- Custom Test.
+
+## 6.2. Giao diện thi
+
+Yêu cầu:
+- Đồng hồ đếm ngược.
+- Số câu đã làm/chưa làm.
+- Đánh dấu câu cần xem lại.
+- Điều hướng theo số câu.
+- Tự động lưu đáp án.
+- Phục hồi phiên khi tải lại trang.
+- Tùy chọn nộp bài sớm.
+- Cảnh báo khi hết thời gian.
+- Chế độ thi nghiêm túc và luyện tập.
+
+Với Listening, mô phỏng phát audio và quy tắc phát lại tùy chế độ. Practice Mode có thể cho nghe lại, giảm tốc độ và xem transcript.
+
+Đồng hồ cần dựa trên thời gian của phiên thi để tránh bị sai lệch khi người dùng chuyển tab hoặc làm mới trang.
+
+## 6.3. Chữa bài
+
+Sau khi nộp bài, hiển thị:
+
+- Đáp án đúng.
+- Đáp án người học chọn.
+- Giải thích tiếng Việt.
+- Giải thích tiếng Anh ngắn.
+- Transcript với Listening.
+- Câu hoặc đoạn văn chứng minh đáp án.
+- Phân tích từng phương án sai.
+- Loại bẫy gây nhầm lẫn.
+- Từ vựng quan trọng.
+- Synonyms và antonyms liên quan.
+- Paraphrasing trong câu.
+- Nút Add to Flashcards.
+- Nút Add to My Mistakes.
+
+Không được tạo lời giải AI thiếu căn cứ hoặc viện dẫn thông tin không có trong bài.
+
+Nếu AI không đủ cơ sở xác định đáp án, phải đánh dấu cần kiểm duyệt.
+
+## 6.4. Điểm thi
+
+Hiển thị riêng:
+- Raw Score.
+- Correct Answers.
+- Incorrect Answers.
+- Accuracy.
+- Estimated Scaled Score nếu có bảng quy đổi phù hợp.
+
+TOEIC chính thức sử dụng thang điểm quy đổi. Không mặc định điểm số câu đúng tương ứng với một điểm scaled score cố định cho mọi đề.
+
+Điểm 650, 800 hoặc 900 là tổng Listening + Reading, không phải điểm của riêng một kỹ năng.
+
+---
+
+# 7. TOEIC TIPS & STRATEGIES – TOÀN BỘ 7 PART
+
+Đây là module hướng dẫn chiến thuật làm bài riêng biệt.
+
+Mỗi Part phải có:
+- Tổng quan.
+- Các dạng câu hỏi.
+- Chiến thuật từng bước.
+- Từ khóa quan trọng.
+- Bẫy thường gặp.
+- Ví dụ minh họa.
+- Mini Quiz.
+- Thống kê mức độ thành thạo.
+- Các mẹo đã được xác minh và giới hạn áp dụng.
+
+## PART 1 – PHOTOGRAPHS
+
+Chiến thuật:
+
+1. Xác định chủ thể chính trong hình.
+2. Nhận diện hành động.
+3. Quan sát vị trí và mối quan hệ giữa các vật.
+4. Phân biệt hành động đang diễn ra với trạng thái.
+5. Chú ý câu bị động và mô tả đồ vật.
+6. Loại câu đề cập đến hành động không được ảnh chứng minh.
+7. Không suy luận những điều không nhìn thấy.
+
+Từ vựng nên luyện:
+- arrange
+- stack
+- lean
+- carry
+- place
+- display
+- examine
+- board
+- load
+- unload
+
+Ví dụ:
+
+"A man is carrying a box."
+
+Câu mô tả một người đàn ông đang mang thùng hàng.
+
+Bẫy cần học:
+- Từ có âm gần giống.
+- Động từ sai.
+- Đối tượng sai.
+- Giới từ vị trí sai.
+- Đưa thêm hành động không có trong hình.
+
+Lưu ý: Không được dạy rằng có "being" là sai 100%. Cấu trúc "is being + V3" vẫn có thể đúng trong câu mô tả tranh.
+
+## PART 2 – QUESTION–RESPONSE
+
+Chiến thuật:
+
+1. Nhận diện WH-question, Yes/No question, choice question hoặc statement.
+2. Nghe từ để hỏi và nội dung chính.
+3. Nhận diện câu trả lời trực tiếp và gián tiếp.
+4. Chú ý đại từ, thời gian và địa điểm.
+5. Không chọn đáp án chỉ vì lặp lại từ trong câu hỏi.
+6. Nhận diện câu hỏi phủ định và đề nghị lịch sự.
+
+Ví dụ:
+
+"When will the shipment arrive?"
+
+"It's expected on Friday."
+
+Các mẫu trả lời gián tiếp cần học:
+
+- "I'll check with the manager."
+- "It hasn't been decided yet."
+- "It depends on the schedule."
+- "Let me find out."
+- "I'm not sure."
+
+Bẫy:
+- Từ phát âm tương tự.
+- Trả lời không liên quan.
+- Lặp từ nhưng sai logic.
+- Trả lời Yes/No không thích hợp với câu hỏi thông tin.
+
+Không áp dụng mẹo loại đáp án có danh từ với tỷ lệ 95% nếu không có bằng chứng.
+
+## PART 3 – CONVERSATIONS
+
+Chiến thuật:
+
+1. Đọc trước câu hỏi khi có thời gian.
+2. Xác định ai đang nói, ở đâu và mục đích hội thoại.
+3. Nghe theo trình tự câu hỏi.
+4. Ghi nhớ số liệu, thời gian, địa điểm và hành động.
+5. Nhận diện sự thay đổi kế hoạch.
+6. Chú ý đề xuất, lời hứa và hành động tiếp theo.
+7. Kết hợp audio với bảng/biểu đồ nếu có.
+8. Nhận diện paraphrasing.
+
+Các dạng câu hỏi:
+- Main purpose.
+- Detail.
+- Speaker intention.
+- Inference.
+- Next action.
+- Graphic-based.
+
+Ví dụ:
+
+Audio: "We need to reschedule the meeting."
+
+Question: "What will the speakers probably do?"
+
+Answer: "Arrange another meeting time."
+
+Giải thích:
+Reschedule được diễn đạt lại bằng arrange another meeting time.
+
+## PART 4 – TALKS
+
+Chiến thuật:
+
+1. Nhận diện loại bài nói: thông báo, quảng cáo, hướng dẫn, bản tin hoặc voicemail.
+2. Xác định người nói và đối tượng nghe.
+3. Tập trung vào mục đích chính.
+4. Nghe thông tin cụ thể như ngày, giờ, giá, địa điểm.
+5. Chú ý từ báo hiệu thay đổi kế hoạch.
+6. Kết hợp bảng/biểu đồ khi cần.
+7. Nhận diện câu hỏi hàm ý.
+
+Ví dụ:
+
+"The flight has been delayed due to bad weather."
+
+Paraphrase:
+
+"The flight will depart later than scheduled."
+
+Từ vựng quan trọng:
+- announcement
+- schedule
+- departure
+- reservation
+- update
+- postpone
+- maintenance
+- inspection
+
+## PART 5 – INCOMPLETE SENTENCES
+
+Chiến thuật:
+
+1. Đọc câu và xác định vị trí chỗ trống.
+2. Xác định từ loại cần điền.
+3. Kiểm tra subject–verb agreement.
+4. Phân tích thì và thể của động từ.
+5. Xét giới từ và collocations.
+6. Phân biệt liên từ, trạng từ liên kết và giới từ.
+7. Kiểm tra đại từ, mạo từ và lượng từ.
+8. Nếu bốn đáp án khác dạng từ, ưu tiên phân tích cấu trúc.
+9. Nếu đáp án cùng từ loại, phải xét nghĩa và ngữ cảnh.
+10. Không chọn chỉ dựa trên từ khóa đơn lẻ.
+
+Ví dụ:
+
+"The report was prepared _____."
+
+A. careful  
+B. carefully  
+C. care  
+D. caring
+
+Đáp án: B. carefully.
+
+Giải thích: Trạng từ bổ nghĩa cho hành động prepared.
+
+Ưu tiên luyện:
+- Word forms.
+- Tenses.
+- Prepositions.
+- Conjunctions.
+- Pronouns.
+- Collocations.
+- Passive voice.
+- Gerunds and infinitives.
+
+## PART 6 – TEXT COMPLETION
+
+Chiến thuật:
+
+1. Đọc nhanh toàn đoạn để xác định chủ đề.
+2. Xem loại văn bản: email, memo, notice, letter.
+3. Đọc câu chứa chỗ trống.
+4. Kiểm tra ngữ pháp.
+5. Kiểm tra nghĩa trong ngữ cảnh.
+6. Với câu hỏi chèn câu, kiểm tra liên kết trước và sau vị trí trống.
+7. Chú ý đại từ quy chiếu.
+8. Theo dõi trình tự thời gian và logic.
+
+Ví dụ:
+
+"The office will be closed on Monday. _____, all employees will work remotely."
+
+Đáp án phù hợp: "Therefore".
+
+Giải thích: Câu thứ hai mô tả hệ quả của việc văn phòng đóng cửa, nếu ngữ cảnh xác nhận mối quan hệ đó.
+
+## PART 7 – READING COMPREHENSION
+
+Chiến thuật:
+
+1. Nhận diện loại văn bản.
+2. Đọc câu hỏi để xác định thông tin cần tìm.
+3. Skim để nắm nội dung chính.
+4. Scan để tìm chi tiết.
+5. Đối chiếu paraphrasing, không chỉ tìm từ giống hệt.
+6. Kiểm tra bẫy phủ định, số liệu, điều kiện.
+7. Với double/triple passages, đối chiếu thông tin giữa nhiều văn bản.
+8. Với inference question, suy luận từ thông tin được hỗ trợ.
+9. Với sentence insertion, kiểm tra mạch văn và đại từ liên kết.
+10. Không tự bổ sung giả định ngoài văn bản.
+
+Các loại câu hỏi:
+- Main idea.
+- Purpose.
+- Detail.
+- Inference.
+- Vocabulary in context.
+- Sentence insertion.
+- Cross-document reference.
+
+Ví dụ:
+
+Passage:
+
+"Applicants must submit their resumes by Friday."
+
+Question:
+
+"What are applicants required to do?"
+
+Answer:
+
+"Send their resumes before the deadline."
+
+Đây là paraphrasing của submit và by Friday.
+
+## 7.1. Chiến thuật quản lý thời gian
+
+Đề xuất thời gian Reading:
+- Part 5: khoảng 10 phút.
+- Part 6: khoảng 10 phút.
+- Part 7: khoảng 55 phút.
+
+Đây là chiến thuật tham khảo, không phải quy định chính thức. Cho phép người học điều chỉnh theo kết quả cá nhân.
+
+## 7.2. Phân loại chất lượng mẹo
+
+Mỗi mẹo trong cơ sở dữ liệu có:
+- Tip ID.
+- Part.
+- Strategy Category.
+- Explanation.
+- Example.
+- Source.
+- Evidence Status.
+- Confidence Level.
+- Conditions.
+- Common Misinterpretations.
+
+Trạng thái:
+- Verified.
+- Context-dependent.
+- Needs Review.
+- Rejected.
+
+Không được hiển thị mẹo thiếu căn cứ như một quy tắc chắc chắn.
+
+---
+
+# 8. LEARNING ANALYTICS – PHÂN TÍCH NĂNG LỰC
+
+Xây dựng dashboard có các chỉ số:
+
+- Tổng thời gian học.
+- Số ngày học liên tiếp.
+- Số flashcards đã học.
+- Số từ đến hạn ôn tập.
+- Tỷ lệ trả lời đúng theo Part.
+- Điểm bài thi theo thời gian.
+- Thời gian trung bình mỗi câu.
+- Các lỗi phổ biến.
+- Từ vựng thường sai.
+- Tỷ lệ hoàn thành bài luyện.
+- Tiến bộ theo tuần và tháng.
+
+Dashboard cần có biểu đồ trực quan.
+
+## 8.1. Phân tích lỗi
+
+Mỗi câu trả lời sai được phân loại thành:
+- Vocabulary.
+- Grammar.
+- Word Form.
+- Collocation.
+- Listening Comprehension.
+- Paraphrasing.
+- Inference.
+- Detail Identification.
+- Time Management.
+- Other/Uncertain.
+
+AI được phép đề xuất loại lỗi nhưng phải thể hiện mức độ tin cậy. Người dùng có thể sửa hoặc phản hồi phân loại.
+
+## 8.2. Adaptive Learning
+
+Hệ thống phân tích:
+- Các Part thường sai.
+- Dạng câu thường sai.
+- Từ vựng chưa nhớ.
+- Thời gian làm bài.
+- Lịch sử học.
+
+Sau đó đề xuất bài học tiếp theo.
+
+Ví dụ:
+
+Người học thường sai câu từ loại Part 5.
+
+Hệ thống đề xuất:
+1. Ôn Word Families.
+2. Làm 10 câu về noun/adjective/adverb.
+3. Tạo flashcards từ các từ trả lời sai.
+4. Kiểm tra lại sau một khoảng thời gian.
+
+Không sử dụng công thức tính điểm năng lực tùy tiện mà không giải thích.
+
+## 8.3. Báo cáo
+
+Cho phép xuất:
+- Báo cáo tiến độ.
+- Danh sách từ vựng đã học.
+- Từ cần ôn.
+- Lỗi thường gặp.
+- Kết quả các đề đã làm.
+
+Định dạng: CSV, Excel hoặc PDF.
+
+---
+
+# 9. AI TUTOR
+
+Tích hợp AI hỗ trợ học tập.
+
+Các chức năng:
+
+1. Giải thích vì sao đáp án đúng.
+2. Giải thích vì sao từng lựa chọn sai.
+3. Dịch câu theo ngữ cảnh.
+4. Phân tích ngữ pháp.
+5. Trích xuất từ vựng đáng học.
+6. Đề xuất synonyms và antonyms.
+7. Phân tích paraphrasing.
+8. Tạo bài luyện tương tự bằng nội dung mới.
+9. Tạo kế hoạch ôn tập.
+10. Trả lời câu hỏi người học về kiến thức TOEIC.
+
+AI phải lấy thông tin từ nguồn học liệu đã được kiểm duyệt khi có thể.
+
+Mọi đáp án chính thức được lưu độc lập với lời giải AI. AI không được tự ý thay đổi answer key.
+
+Nếu chưa xác minh nghĩa hoặc đáp án, thông báo rõ thay vì đoán.
+
+---
+
+# 10. CƠ SỞ DỮ LIỆU
+
+Sử dụng PostgreSQL.
+
+Thiết kế tối thiểu các nhóm bảng:
+
+**User & Learning**
+- users
+- user_profiles
+- study_goals
+- study_sessions
+- learning_events
+
+**Documents**
+- source_documents
+- source_pages
+- import_jobs
+- content_review_queue
+
+**Vocabulary**
+- vocabulary_entries
+- vocabulary_senses
+- lexical_relations
+- vocabulary_examples
+- collocations
+- word_families
+- flashcard_decks
+- flashcard_deck_items
+- flashcard_reviews
+
+**Grammar & Strategies**
+- grammar_topics
+- grammar_examples
+- strategy_tips
+- strategy_examples
+
+**Exam**
+- tests
+- test_sections
+- passages
+- questions
+- answer_options
+- answer_keys
+- question_explanations
+- test_sessions
+- user_answers
+- mistake_records
+
+**Analytics**
+- learning_analytics_events
+- performance_summaries
+- vocabulary_mastery
+- topic_mastery
+
+Bảng lexical_relations phải cho phép lưu:
+- source_vocab_sense_id
+- target_vocab_sense_id hoặc target phrase
+- relation_type
+- context
+- interchangeability
+- usage_level
+- priority
+- supporting_example
+- source_reference
+- verification_status
+
+Tuyệt đối không gộp tất cả từ đồng nghĩa/trái nghĩa thành một chuỗi ký tự duy nhất, vì điều đó sẽ gây khó khăn khi tìm kiếm, lọc và thống kê.
+
+Thiết kế migrations, indexes, foreign keys, unique constraints và phân quyền phù hợp.
+
+---
+
+# 11. KIẾN TRÚC KỸ THUẬT
+
+Ưu tiên stack:
+
+Frontend:
+- Next.js.
+- React.
+- TypeScript.
+- Tailwind CSS.
+- Shadcn/UI hoặc component library tương đương.
+
+Backend:
+- FastAPI hoặc NestJS.
+
+Database:
+- PostgreSQL.
+
+ORM:
+- Prisma hoặc SQLAlchemy tùy backend.
+
+Authentication:
+- Email/password hoặc đăng nhập qua nhà cung cấp đáng tin cậy.
+
+Storage:
+- Object storage tương thích S3 cho hình ảnh và audio.
+
+Analytics:
+- Event tracking có cấu trúc.
+- Dashboard analytics nội bộ.
+- Có thể tích hợp GA4 cho hoạt động sản phẩm nhưng không đưa nội dung học tập nhạy cảm vào hệ thống bên thứ ba một cách không cần thiết.
+
+AI:
+- Tích hợp LLM qua backend.
+- Lưu prompt version và output metadata.
+- Kiểm soát chi phí API.
+- Cache những lời giải đã xác minh.
+
+Kiến trúc:
+- Modular monolith ở giai đoạn đầu.
+- Tách logic flashcard, exam, analytics và content ingestion theo module.
+- API có tài liệu.
+- Type-safe.
+- Có logging và error handling.
+
+Không cần microservices khi chưa có nhu cầu mở rộng thực tế.
+
+---
+
+# 12. QUẢN TRỊ DỮ LIỆU VÀ NHẬP TÀI LIỆU
+
+Phát triển trang Admin cho phép:
+
+- Upload PDF, DOCX, XLSX, CSV và hình ảnh.
+- Xem trước file.
+- Trích xuất nội dung.
+- Phân loại từ vựng và ngữ pháp.
+- Phát hiện từ trùng.
+- Phát hiện IPA thiếu hoặc sai.
+- Phát hiện nghĩa không nhất quán.
+- Phát hiện quan hệ đồng nghĩa sai.
+- Đối chiếu nội dung gốc với nội dung AI chuẩn hóa.
+- Duyệt trước khi xuất bản.
+- Chỉnh sửa từng mục.
+- Quản lý nguồn và phiên bản.
+
+Tất cả kết quả trích xuất từ ảnh cần có bước kiểm chứng và kiểm duyệt, đặc biệt đối với IPA, dấu câu, ký hiệu ngữ pháp và đáp án.
+
+Nếu tài liệu không đầy đủ, hiển thị rõ những khoảng dữ liệu còn thiếu.
+
+---
+
+# 13. BẢO MẬT, HIỆU NĂNG VÀ CHẤT LƯỢNG
+
+Yêu cầu:
+- Phân quyền người dùng/Admin.
+- Kiểm tra dữ liệu đầu vào.
+- Bảo vệ API.
+- Rate limiting.
+- Quản lý secrets bằng environment variables.
+- Không đưa API key ra frontend.
+- Bảo vệ file riêng tư.
+- Phòng chống XSS, CSRF khi có liên quan và SQL injection.
+- Backup cơ sở dữ liệu.
+- Responsive.
+- Lazy loading các tài nguyên lớn.
+- Tối ưu audio, ảnh và truy vấn.
+- Có cơ chế phục hồi lỗi khi làm bài.
+
+Thiết lập kiểm thử:
+
+1. Unit tests.
+2. Integration tests.
+3. End-to-end tests.
+4. Kiểm thử thuật toán chấm điểm.
+5. Kiểm thử Spaced Repetition.
+6. Kiểm thử tự lưu bài.
+7. Kiểm thử đăng nhập và phân quyền.
+8. Kiểm thử nhập dữ liệu.
+9. Kiểm thử synonym/antonym theo ngữ cảnh.
+10. Kiểm thử trên desktop và mobile.
+
+---
+
+# 14. KẾ HOẠCH TRIỂN KHAI
+
+## Phase 1 – Working MVP
+
+Phải triển khai hoạt động:
+
+- Trang Dashboard.
+- Thư viện từ vựng.
+- Flashcards hai mặt.
+- Ba flashcard mẫu ở mục 4.3.
+- Synonyms/Antonyms.
+- Ba chế độ học: Learn, Review, Quiz.
+- Lưu tiến độ ôn tập.
+- Trang TOEIC Tips Part 1–7.
+- Các câu hỏi luyện tập mẫu tự tạo và đã kiểm tra.
+- Xem đáp án và lời giải.
+- Database thực tế.
+
+Dữ liệu chưa có phải thể hiện là dữ liệu mẫu hoặc chưa được nhập. Không tạo số liệu giả dưới dạng dữ liệu người dùng thật.
+
+## Phase 2 – Exam System
+
+Triển khai:
+- Full Test.
+- Mini Test.
+- Listening.
+- Reading.
+- Autosave.
+- Timer.
+- Results.
+- Mistake Review.
+- Import ngân hàng đề được cấp quyền.
+
+## Phase 3 – Intelligent Learning
+
+Triển khai:
+- Learning Analytics.
+- Adaptive Learning.
+- AI Tutor.
+- Flashcards tạo từ lỗi sai.
+- Phân tích paraphrasing.
+- Study Planner.
+
+## Phase 4 – Production Readiness
+
+Triển khai:
+- Kiểm thử toàn diện.
+- Tối ưu hiệu năng.
+- Bảo mật.
+- Quản trị nội dung.
+- Sao lưu.
+- CI/CD.
+- Production Deployment.
+
+---
+
+# 15. YÊU CẦU ĐỐI VỚI AI CODING AGENT
+
+Không chỉ trả lời bằng kế hoạch.
+
+Hãy thực hiện theo trình tự:
+
+**Bước 1:** Phân tích yêu cầu và những tính năng quan trọng nhất.
+
+**Bước 2:** Đề xuất kiến trúc, luồng người dùng, data model và cấu trúc source code.
+
+**Bước 3:** Thiết kế giao diện tổng thể với design system nhất quán.
+
+**Bước 4:** Xây dựng Working MVP bằng code thực tế.
+
+**Bước 5:** Tạo migrations và dữ liệu mẫu được xác minh.
+
+**Bước 6:** Tích hợp ba Flashcard mẫu đầy đủ từ đồng nghĩa, trái nghĩa, mức phổ biến và ví dụ.
+
+**Bước 7:** Xây dựng trang chiến thuật 7 Part.
+
+**Bước 8:** Tích hợp luyện tập, chấm điểm và lưu tiến độ.
+
+**Bước 9:** Viết và chạy các bài kiểm thử khả dụng.
+
+**Bước 10:** Hướng dẫn chạy local, cấu hình environment và triển khai.
+
+Kết quả bàn giao phải có:
+
+- Source code.
+- README.
+- Danh sách chức năng đã hoàn thành.
+- Danh sách chức năng chưa hoàn thành.
+- Database schema.
+- Migration files.
+- Seed data.
+- Hướng dẫn khởi chạy.
+- Các bài kiểm thử và kết quả.
+- Những giới hạn cần lưu ý.
+
+Nếu môi trường hiện tại không hỗ trợ triển khai toàn bộ, ưu tiên xây dựng MVP có thể chạy được thay vì chỉ mô tả ứng dụng lý tưởng.
+
+Không tuyên bố tính năng đã hoàn thành nếu chưa triển khai hoặc chưa kiểm thử.
+
+---
+
+# 16. TIÊU CHÍ NGHIỆM THU
+
+Ứng dụng chỉ được coi là đạt yêu cầu MVP khi:
+
+1. Người dùng có thể mở và lật Flashcard.
+2. Từ vựng có nghĩa tiếng Việt và ví dụ.
+3. Các từ mẫu có ba synonyms và ba antonyms phù hợp ngữ cảnh.
+4. Mức độ phổ biến của từng quan hệ từ được hiển thị và có giải thích.
+5. Người dùng có thể đánh dấu đã thuộc/chưa thuộc.
+6. Tiến độ được lưu và khôi phục.
+7. Có ít nhất một chế độ kiểm tra từ vựng tương tác.
+8. Có trang chiến thuật đầy đủ cho Part 1–7.
+9. Có thể làm bài luyện và nhận kết quả.
+10. Có lời giải cho đáp án.
+11. Giao diện hoạt động trên desktop và mobile.
+12. Cơ sở dữ liệu thực sự hoạt động.
+13. Nội dung AI sinh ra được phân biệt với nội dung đã kiểm duyệt.
+14. Không có số liệu thống kê giả.
+15. Các chức năng chính vượt qua kiểm thử.
+
+# YÊU CẦU CUỐI CÙNG
+
+Hãy bắt đầu xây dựng **TOEIC MASTER AI** theo kiến trúc trên.
+
+Ưu tiên trải nghiệm học từ vựng bằng flashcards, đặc biệt là từ đồng nghĩa, trái nghĩa, paraphrasing và mức độ phổ biến trong ngữ cảnh TOEIC.
+
+Ứng dụng cần thực dụng, dễ dùng, đẹp, có khả năng mở rộng, có phân tích dữ liệu học tập và hỗ trợ người dùng cải thiện năng lực qua từng lần luyện.
+
+Tập trung vào một sản phẩm thực sự hoạt động, không chỉ tạo bản thiết kế hoặc demo tĩnh.
