@@ -1,6 +1,5 @@
 {
-  "name": "TOEIC MASTER AI",
-  "description": "Hệ thống học từ vựng TOEIC thông minh với Flashcards 2 mặt, quan hệ từ đồng nghĩa - trái nghĩa, thuật toán lặp lại ngắt quãng FSRS và AI Tutor.",
+  "name": "TOIEC CHANG CHANG",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

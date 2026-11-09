@@ -16,11 +16,13 @@ import {
   BookOpen,
   FilePlus,
   Trash2,
+  X,
 } from 'lucide-react';
 import { VocabularyItem, ReviewRating } from '../../types';
 import { FlashcardCard } from './FlashcardCard';
 import { FlashcardStudyModal } from './FlashcardStudyModal';
 import { AddVocabTextModal } from './AddVocabTextModal';
+import { PronunciationButton } from './PronunciationButton';
 import { api } from '../../services/api';
 
 interface FlashcardsViewProps {
@@ -48,10 +50,14 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({
     setVisibleCount(25);
   }, [selectedTopic, selectedPart, searchQuery, filterBookmarkedOnly]);
 
+  const [selectedCardForDetail, setSelectedCardForDetail] = useState<VocabularyItem | null>(null);
+  const [showBookmarkedModal, setShowBookmarkedModal] = useState(false);
   const [showDeduplicateModal, setShowDeduplicateModal] = useState(false);
   const [isDeduplicating, setIsDeduplicating] = useState(false);
   const [deduplicateResult, setDeduplicateResult] = useState<{ removedCount: number; duplicateWords: string[] } | null>(null);
   const [deduplicateError, setDeduplicateError] = useState<string | null>(null);
+
+  const bookmarkedCards = cards.filter((c) => c.review?.isBookmarked);
 
   // Compute metrics
   const now = new Date();
@@ -202,70 +208,50 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({
           <div className="text-[11px] text-slate-400 mt-0.5">Khoảng cách &gt; 7 ngày</div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-xs text-purple-600 dark:text-purple-400 font-medium">Đánh dấu sao</div>
+        <div
+          onClick={() => setShowBookmarkedModal(true)}
+          className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-900/60 hover:border-purple-400 dark:hover:border-purple-600 shadow-xs hover:shadow-md transition-all cursor-pointer group active:scale-98"
+          title="Bấm để mở danh sách từ vựng đã gắn sao"
+        >
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1 group-hover:underline">
+              <Star className="w-3.5 h-3.5 fill-purple-500 text-purple-500" />
+              <span>Đánh dấu sao</span>
+            </div>
+            <span className="text-[10px] text-purple-700 dark:text-purple-300 font-bold bg-purple-50 dark:bg-purple-950/80 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
+              Xem danh sách ➔
+            </span>
+          </div>
           <div className="text-2xl md:text-3xl font-extrabold text-purple-600 dark:text-purple-400 mt-1 tabular-nums">
             {bookmarkedCount}
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Cần chú ý đặc biệt</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Bấm để mở popup xem lại các từ đã sao
+          </div>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm từ tiếng Anh, nghĩa tiếng Việt, từ đồng nghĩa..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 dark:text-white"
-            />
-          </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Filter bookmarked toggle */}
-            <button
-              onClick={() => setFilterBookmarkedOnly(!filterBookmarkedOnly)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
-                filterBookmarkedOnly
-                  ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-              }`}
-            >
-              <Star className={`w-3.5 h-3.5 ${filterBookmarkedOnly ? 'fill-amber-500' : ''}`} />
-              <span>Chỉ từ gắn sao</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Topic filter bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-          {topics.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setSelectedTopic(t.id)}
-              className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors cursor-pointer ${
-                selectedTopic === t.id
-                  ? 'bg-sky-600 text-white font-semibold'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </section>
 
       {/* Flashcard Cards Showcase & Practice */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-sky-600" />
-            <span>Danh sách thẻ từ vựng ({filteredCards.length} thẻ)</span>
-          </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-sky-600" />
+              <span>Danh sách thẻ từ vựng ({filteredCards.length} thẻ)</span>
+            </h2>
+            {filterBookmarkedOnly && (
+              <button
+                onClick={() => setFilterBookmarkedOnly(false)}
+                className="flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/60 cursor-pointer transition-colors"
+                title="Bấm để hiển thị tất cả thẻ"
+              >
+                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                <span>Đang lọc từ gắn sao (Xem tất cả ✕)</span>
+              </button>
+            )}
+          </div>
           <span className="text-xs text-slate-500">Nhấp vào thẻ để lật xem mặt sau</span>
         </div>
 
@@ -461,6 +447,192 @@ export const FlashcardsView: React.FC<FlashcardsViewProps> = ({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Bookmarked Words List Modal */}
+      {showBookmarkedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 md:p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+                  <Star className="w-5 h-5 fill-amber-500" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base md:text-lg text-slate-900 dark:text-white">
+                    Từ vựng đã đánh dấu sao ({bookmarkedCards.length})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Danh sách các từ vựng ưu tiên cần chú ý ôn tập đặc biệt
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowBookmarkedModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto space-y-3">
+              {bookmarkedCards.length === 0 ? (
+                <div className="text-center py-12 space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center mx-auto">
+                    <Star className="w-6 h-6" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base">
+                    Chưa có từ vựng nào được gắn sao
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+                    Hãy nhấp vào biểu tượng ngôi sao <Star className="w-3.5 h-3.5 inline fill-amber-500 text-amber-500" /> trên góc bất kỳ thẻ từ vựng nào để lưu vào danh sách quan trọng này!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {bookmarkedCards.map((c) => (
+                    <div
+                      key={c.id}
+                      onClick={() => {
+                        setShowBookmarkedModal(false);
+                        setSelectedCardForDetail(c);
+                      }}
+                      className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between gap-4 hover:border-sky-400 dark:hover:border-sky-500 hover:bg-white dark:hover:bg-slate-800/90 transition-all cursor-pointer group shadow-2xs hover:shadow-md"
+                      title="Nhấn vào để xem thẻ Flashcard 2 mặt của từ này"
+                    >
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-black text-base md:text-lg text-slate-900 dark:text-white uppercase tracking-tight group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+                            {c.word}
+                          </span>
+                          <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+                            {c.ipa}
+                          </span>
+                          <PronunciationButton text={c.word} size="sm" />
+                          <span className="text-[10px] font-bold uppercase text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950 px-2 py-0.5 rounded">
+                            [{c.partOfSpeech}]
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                          {c.definitionVi}
+                        </p>
+                        {c.exampleEn && (
+                          <p className="text-[11px] text-slate-600 dark:text-slate-400 italic line-clamp-1">
+                            "{c.exampleEn}"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <span className="text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950 px-2.5 py-1.5 rounded-xl border border-sky-200 dark:border-sky-900 group-hover:bg-sky-600 group-hover:text-white transition-all shadow-2xs">
+                          Xem Flashcard ➔
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleBookmark(c.id);
+                          }}
+                          className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-500 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
+                          title="Bỏ đánh dấu sao"
+                        >
+                          <Star className="w-4 h-4 fill-amber-500" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-center justify-between shrink-0">
+              <span className="text-xs text-slate-500">
+                {bookmarkedCards.length} từ vựng đã chọn
+              </span>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowBookmarkedModal(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  Đóng
+                </button>
+
+                {bookmarkedCards.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBookmarkedModal(false);
+                      setFilterBookmarkedOnly(true);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold cursor-pointer shadow-xs transition-colors"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Lọc xem thẻ trên danh sách</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Individual Flashcard Detail Modal */}
+      {selectedCardForDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-3 md:p-6 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                  Thẻ Flashcard 2 Mặt
+                </span>
+                <span className="text-slate-400">·</span>
+                <span className="font-extrabold text-base md:text-lg text-slate-900 dark:text-white uppercase tracking-tight">
+                  {selectedCardForDetail.word}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedCardForDetail(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 md:p-6 flex-1 overflow-y-auto">
+              <FlashcardCard
+                card={selectedCardForDetail}
+                onRating={(vocabId, rating) => {
+                  onRating(vocabId, rating);
+                  const updated = cards.find((c) => c.id === vocabId);
+                  if (updated) setSelectedCardForDetail({ ...updated });
+                }}
+                onToggleBookmark={(vocabId) => {
+                  onToggleBookmark(vocabId);
+                  const updated = cards.find((c) => c.id === vocabId);
+                  if (updated) {
+                    setSelectedCardForDetail({
+                      ...updated,
+                      review: {
+                        ...updated.review!,
+                        isBookmarked: !updated.review?.isBookmarked,
+                      },
+                    });
+                  }
+                }}
+                isBookmarked={!!selectedCardForDetail.review?.isBookmarked}
+              />
+            </div>
           </div>
         </div>
       )}
